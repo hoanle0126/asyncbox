@@ -18,10 +18,11 @@ export async function asyncmap<T, R>(
   // limitFunction requires the mapper to always return a promise
   const mapperAsync = async (value: T): Promise<R> => mapper(value);
   if (options === false) {
-    return coll.reduce<Promise<R[]>>(
-      async (acc, item) => [...(await acc), await mapperAsync(item)],
-      Promise.resolve([]),
-    );
+    const results: R[] = [];
+    for (const item of coll) {
+      results.push(await mapperAsync(item));
+    }
+    return results;
   }
   const adjustedMapper =
     options === true ? mapperAsync : (await getLimitFunction())(mapperAsync, {concurrency: options.concurrency});
